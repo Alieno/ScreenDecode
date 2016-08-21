@@ -345,7 +345,7 @@ public class DecodeUtils {
                     float centY = ((float) ys + ye) / 2;
 
                     //remove small spots
-                    if (Math.abs(xe - xs) < 2 && Math.abs(ye - ys) < 2) {
+                    if (Math.abs(xe - xs) < 1 && Math.abs(ye - ys) < 1) {
 //                        Log.w("removed:", " too small:" + centX + "|" + centY);
                         continue;
                     }

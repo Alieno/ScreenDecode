@@ -17,6 +17,7 @@
 package com.google.zxing.Android;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 
 import com.google.zxing.LuminanceSource;
 
@@ -114,16 +115,77 @@ public final class PlanarYUVLuminanceSource extends LuminanceSource {
         int width = getWidth();
         int height = getHeight();
         int[] pixels = new int[width * height];
+        int[] tmpPixels = new int[width * height];
         byte[] yuv = yuvData;
         int inputOffset = top * dataWidth + left;
 
         for (int y = 0; y < height; y++) {
             int outputOffset = y * width;
             for (int x = 0; x < width; x++) {
-                int grey = yuv[inputOffset + x] & 0xff;
-                pixels[outputOffset + x] = 0xFF000000 | (grey * 0x00010101);
+                tmpPixels[outputOffset + x] = yuv[inputOffset + x];
             }
             inputOffset += dataWidth;
+        }
+
+//        for (int y = 0; y < height; y++) {
+//            int outputOffset = y * width;
+//            for (int x = 0; x < width; x++) {
+//                int grey = yuv[inputOffset + x] & 0xff;
+//                pixels[outputOffset + x] = 0xFF000000 | (grey * 0x00010101);
+//            }
+//            inputOffset += dataWidth;
+//        }
+        int[] laplacian = new int[] { -1, -1, -1, -1, 9, -1, -1, -1, -1 };
+        int pixR = 0;
+        int pixG = 0;
+        int pixB = 0;
+
+        int pixColor = 0;
+
+        int newR = 0;
+        int newG = 0;
+        int newB = 0;
+
+        int idx = 0;
+        float alpha = 2.0F;
+        int[] pixels2 = new int[width * height];
+
+        for (int i = 1, length = height - 1; i < length; i++)
+        {
+            for (int k = 1, len = width - 1; k < len; k++)
+            {
+                idx = 0;
+                for (int m = -1; m <= 1; m++)
+                {
+                    for (int n = -1; n <= 1; n++)
+                    {
+                        pixColor = tmpPixels[(i + n) * width + k + m];
+                        pixR = Color.red(pixColor);
+                        pixG = Color.green(pixColor);
+                        pixB = Color.blue(pixColor);
+
+                        newR = newR + (int) (pixR * laplacian[idx] * alpha);
+                        newG = newG + (int) (pixG * laplacian[idx] * alpha);
+                        newB = newB + (int) (pixB * laplacian[idx] * alpha);
+                        idx++;
+                    }
+                }
+
+                newR = Math.min(255, Math.max(0, newR));
+                newG = Math.min(255, Math.max(0, newG));
+                newB = Math.min(255, Math.max(0, newB));
+
+                pixels2[i * width + k] = Color.argb(255, newR, newG, newB);
+                newR = 0;
+                newG = 0;
+                newB = 0;
+            }
+        }
+
+
+        for (int y = 0; y < height * width; y++){
+            int grey = pixels2[y] & 0xff;
+            pixels[y] = 0xFF000000 | (grey * 0x00010101);
         }
 
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);

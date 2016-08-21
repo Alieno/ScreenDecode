@@ -76,6 +76,7 @@ public class SFHCamera implements SurfaceHolder.Callback {
             parameters.setPreviewSize((mPreviewSize.width == 0 ? 480 : mPreviewSize.width), (mPreviewSize.height == 0 ? 320 : mPreviewSize.height));
             parameters.setPreviewFormat(pixelFormat);
             parameters.setFlashMode(!this.parentActivity.flag_light ? Camera.Parameters.FLASH_MODE_OFF : Camera.Parameters.FLASH_MODE_TORCH);
+            parameters.setZoom(20);
             mCamera.setParameters(parameters);
             mCamera.startPreview();
 
